@@ -2,18 +2,20 @@ import json
 import os
 from datetime import datetime, timezone
 from types import SimpleNamespace
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Tuple
 
 import rasterio
 import requests
 from dateutil.parser import parse
 from pyproj import CRS, Transformer
-from shapely.geometry import box, shape, mapping
+from shapely.geometry import box, mapping, shape
+
 
 class StacMetadata(SimpleNamespace):
     """
     AAFC Land Use Stac Metadata namespace
     """
+
     @staticmethod
     def get_datetime(dt_text: str) -> datetime:
         """
@@ -43,6 +45,7 @@ class StacMetadata(SimpleNamespace):
         geo = shape(json.loads(geojson))
         return list(geo.bounds)
 
+
 def get_raster_metadata(raster_path: str) -> Tuple[List[float], List[float], List[int]]:
     """
     Retrieve the bounding box, transform and shape from a raster file.
@@ -51,7 +54,8 @@ def get_raster_metadata(raster_path: str) -> Tuple[List[float], List[float], Lis
         raster_path (str): Path to the raster file
 
     Returns:
-        Tuple[List[float], List[float], List[int]]: The bounding box, transform, and shape of the raster
+        Tuple[List[float], List[float], List[int]]: The bounding box, transform,
+        and shape of the raster
     """
     with rasterio.open(raster_path) as dataset:
         bbox = list(dataset.bounds)
@@ -59,6 +63,7 @@ def get_raster_metadata(raster_path: str) -> Tuple[List[float], List[float], Lis
         shape = [dataset.height, dataset.width]
 
     return bbox, transform, shape
+
 
 def bounds_to_geojson(bbox: List[float], in_crs: int) -> Dict[str, Any]:
     """
@@ -71,13 +76,14 @@ def bounds_to_geojson(bbox: List[float], in_crs: int) -> Dict[str, Any]:
     Returns:
         Dict[str, Any]: The bounding box in geojson format
     """
-    transformer = Transformer.from_crs(CRS.from_epsg(in_crs),
-                                       CRS.from_epsg(4326),
-                                       always_xy=True)
+    transformer = Transformer.from_crs(
+        CRS.from_epsg(in_crs), CRS.from_epsg(4326), always_xy=True
+    )
     xmin, ymin, xmax, ymax = bbox
     bbox_transformed = list(transformer.transform_bounds(xmin, ymin, xmax, ymax))
     box_shape = box(*bbox_transformed, ccw=True)
     return dict(mapping(box_shape))
+
 
 def get_metadata(metadata_path: str) -> StacMetadata:
     """
@@ -107,10 +113,14 @@ def get_metadata(metadata_path: str) -> StacMetadata:
     stac_metadata.license_url = remote_metadata["license_url"]
 
     # Temporal extent
-    stac_metadata.datetime_start = StacMetadata.get_datetime(remote_metadata["time_period_coverage_start"])
+    stac_metadata.datetime_start = StacMetadata.get_datetime(
+        remote_metadata["time_period_coverage_start"]
+    )
 
     if "time_period_coverage_end" in remote_metadata:
-        stac_metadata.datetime_end = StacMetadata.get_datetime(remote_metadata["time_period_coverage_end"])
+        stac_metadata.datetime_end = StacMetadata.get_datetime(
+            remote_metadata["time_period_coverage_end"]
+        )
     else:
         stac_metadata.datetime_end = None  # Ongoing data capture
 
