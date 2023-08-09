@@ -31,7 +31,7 @@ pip install stactools-canelevation
 Base use is below:
 
 ```shell
-stac canelevation create-collection <destination>
+stac canelevation create-collection -d <destination>
 stac canelevation create-item <source> <destination>
 
 stac canelevation create-item https://ftp-maps-canada-ca.s3.amazonaws.com/pub/elevation/pointclouds_nuagespoints/NRCAN/Fort_McMurray_2018/AB_FortMcMurray2018_20180518_NAD83CSRS_UTMZ12_1km_E4760_N62940_CQL1_CLASS.copc.laz examples/

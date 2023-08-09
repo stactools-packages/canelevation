@@ -1,0 +1,164 @@
+{
+  "type": "Feature",
+  "stac_version": "1.0.0",
+  "id": "AB_FortMcMurray2018_20180518_NAD83CSRS_UTMZ12_1km_E4760_N62940_CQL1_CLASS",
+  "properties": {
+    "pc:count": 12180055,
+    "pc:type": "lidar",
+    "pc:encoding": "laz",
+    "pc:schemas": [
+      {
+        "name": "X",
+        "size": 8,
+        "type": "floating"
+      },
+      {
+        "name": "Y",
+        "size": 8,
+        "type": "floating"
+      },
+      {
+        "name": "Z",
+        "size": 8,
+        "type": "floating"
+      },
+      {
+        "name": "Intensity",
+        "size": 2,
+        "type": "unsigned"
+      },
+      {
+        "name": "ReturnNumber",
+        "size": 1,
+        "type": "unsigned"
+      },
+      {
+        "name": "NumberOfReturns",
+        "size": 1,
+        "type": "unsigned"
+      },
+      {
+        "name": "ScanDirectionFlag",
+        "size": 1,
+        "type": "unsigned"
+      },
+      {
+        "name": "EdgeOfFlightLine",
+        "size": 1,
+        "type": "unsigned"
+      },
+      {
+        "name": "Classification",
+        "size": 1,
+        "type": "unsigned"
+      },
+      {
+        "name": "ScanAngleRank",
+        "size": 4,
+        "type": "floating"
+      },
+      {
+        "name": "UserData",
+        "size": 1,
+        "type": "unsigned"
+      },
+      {
+        "name": "PointSourceId",
+        "size": 2,
+        "type": "unsigned"
+      },
+      {
+        "name": "GpsTime",
+        "size": 8,
+        "type": "floating"
+      },
+      {
+        "name": "ScanChannel",
+        "size": 1,
+        "type": "unsigned"
+      },
+      {
+        "name": "ClassFlags",
+        "size": 1,
+        "type": "unsigned"
+      }
+    ],
+    "proj:epsg": 2956,
+    "proj:wkt2": "PROJCRS[\"NAD83(CSRS) / UTM zone 12N\",BASEGEOGCRS[\"NAD83(CSRS)\",DATUM[\"NAD83 Canadian Spatial Reference System\",ELLIPSOID[\"GRS 1980\",6378137,298.257222101,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],ID[\"EPSG\",4617]],CONVERSION[\"UTM zone 12N\",METHOD[\"Transverse Mercator\",ID[\"EPSG\",9807]],PARAMETER[\"Latitude of natural origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433],ID[\"EPSG\",8801]],PARAMETER[\"Longitude of natural origin\",-111,ANGLEUNIT[\"degree\",0.0174532925199433],ID[\"EPSG\",8802]],PARAMETER[\"Scale factor at natural origin\",0.9996,SCALEUNIT[\"unity\",1],ID[\"EPSG\",8805]],PARAMETER[\"False easting\",500000,LENGTHUNIT[\"metre\",1],ID[\"EPSG\",8806]],PARAMETER[\"False northing\",0,LENGTHUNIT[\"metre\",1],ID[\"EPSG\",8807]]],CS[Cartesian,2],AXIS[\"easting\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing\",north,ORDER[2],LENGTHUNIT[\"metre\",1]],ID[\"EPSG\",2956]]",
+    "proj:bbox": [
+      476000.001,
+      6294000.0,
+      476999.989,
+      6294999.99
+    ],
+    "datetime": "2020-02-29T00:00:00Z"
+  },
+  "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+      [
+        [
+          -111.376506,
+          56.789349
+        ],
+        [
+          -111.376596,
+          56.798332
+        ],
+        [
+          -111.392969,
+          56.798282
+        ],
+        [
+          -111.392875,
+          56.789298
+        ],
+        [
+          -111.376506,
+          56.789349
+        ]
+      ]
+    ]
+  },
+  "links": [
+    {
+      "rel": "root",
+      "href": "../collection.json",
+      "type": "application/json",
+      "title": "LiDAR Point Clouds - CanElevation Series"
+    },
+    {
+      "rel": "collection",
+      "href": "../collection.json",
+      "type": "application/json",
+      "title": "LiDAR Point Clouds - CanElevation Series"
+    },
+    {
+      "rel": "parent",
+      "href": "../collection.json",
+      "type": "application/json",
+      "title": "LiDAR Point Clouds - CanElevation Series"
+    }
+  ],
+  "assets": {
+    "pointcloud": {
+      "href": "https://ftp-maps-canada-ca.s3.amazonaws.com/pub/elevation/pointclouds_nuagespoints/NRCAN/Fort_McMurray_2018/AB_FortMcMurray2018_20180518_NAD83CSRS_UTMZ12_1km_E4760_N62940_CQL1_CLASS.copc.laz",
+      "type": "application/octet-stream",
+      "title": "laz point cloud",
+      "roles": [
+        "data"
+      ]
+    }
+  },
+  "bbox": [
+    -111.392969,
+    56.789298,
+    -111.376506,
+    56.798332
+  ],
+  "stac_extensions": [
+    "https://stac-extensions.github.io/pointcloud/v1.0.0/schema.json",
+    "https://stac-extensions.github.io/projection/v1.1.0/schema.json"
+  ],
+  "collection": "nrcan-canelevation"
+}
