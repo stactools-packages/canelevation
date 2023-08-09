@@ -1,56 +1,124 @@
+import json
 import logging
+import os
 
 import click
+import pystac
 from click import Command, Group
 
-from stactools.ephemeral import stac
+from stactools.canelevation.constants import METADATA_URL
+from stactools.canelevation.stac import create_collection, create_item
 
 logger = logging.getLogger(__name__)
 
 
-def create_ephemeralcmd_command(cli: Group) -> Command:
-    """Creates the stactools-ephemeral command line utility."""
+def create_canelevation_command(cli: Group) -> Command:
+    """Creates a command group for commands working with
+    canelevations.
+    """
 
     @cli.group(
-        "ephemeralcmd",
-        short_help=("Commands for working with stactools-ephemeral"),
+        "canelevation",
+        short_help=("Commands for working with " "CanElevation point clouds."),
     )
-    def ephemeralcmd() -> None:
+    def canelevation() -> None:
         pass
 
-    @ephemeralcmd.command(
+    @canelevation.command(
         "create-collection",
-        short_help="Creates a STAC collection",
+        short_help="Creates a STAC collection from NRCan CanElevation",
     )
-    @click.argument("destination")
-    def create_collection_command(destination: str) -> None:
-        """Creates a STAC Collection
+    @click.option(
+        "-d",
+        "--destination",
+        required=True,
+        help="The output directory for the STAC Collection json",
+    )
+    @click.option(
+        "-m", "--metadata", help="URL to the NRCan metadata json", default=METADATA_URL
+    )
+    def create_collection_command(destination: str, metadata: str) -> None:
+        """Creates a STAC Collection from NRCan Land Use CanElevation metadata
 
         Args:
-            destination (str): An HREF for the Collection JSON
+            destination (str): Directory to create the collection json
+            metadata (str, optional): Path to json metadata file - provided by NRCan
+
+        Returns:
+            Callable
         """
-        collection = stac.create_collection()
+        # Collect the metadata as a dict and create the collection
+        collection = create_collection(metadata)
 
-        collection.set_self_href(destination)
+        # Set the destination
+        output_path = os.path.join(destination, "collection.json")
+        collection.set_self_href(output_path)
+        collection.normalize_hrefs(destination)
 
-        collection.save_object()
+        # Save and validate
+        collection.save()
+        collection.validate()
 
-        return None
+    @canelevation.command(
+        "create-item", short_help="Create a STAC Item from a las or laz file"
+    )
+    @click.argument("href")
+    @click.argument("dst")
+    @click.option("-r", "--reader", help="Override the default PDAL reader.")
+    @click.option(
+        "-q", "--quick", is_flag=True, help="Do a quick look at the COPC data."
+    )
+    @click.option(
+        "-t",
+        "--pointcloud-type",
+        default="lidar",
+        help="Set the pointcloud type (default: lidar)",
+    )
+    @click.option(
+        "--compute-statistics/--no-compute-statistics",
+        default=False,
+        help="Compute statistics for the pointcloud (could take a while)",
+    )
+    @click.option(
+        "-p",
+        "--providers",
+        help="Path to JSON file containing array of additional providers",
+    )
+    def create_item_command(
+        href: str,
+        dst: str,
+        reader: str,
+        pointcloud_type: str,
+        compute_statistics: bool,
+        providers: str,
+        quick: bool,
+    ) -> None:
+        """Creates a STAC Item based on the header of a pointcloud.
 
-    @ephemeralcmd.command("create-item", short_help="Create a STAC item")
-    @click.argument("source")
-    @click.argument("destination")
-    def create_item_command(source: str, destination: str) -> None:
-        """Creates a STAC Item
-
-        Args:
-            source (str): HREF of the Asset associated with the Item
-            destination (str): An HREF for the STAC Item
+        HREF is the pointcloud file.
+        DST is directory that a STAC Item JSON file will be created
+        in.
         """
-        item = stac.create_item(source)
+        additional_providers = None
+        if providers:
+            with open(providers) as f:
+                additional_providers = [
+                    pystac.Provider.from_dict(d) for d in json.load(f)
+                ]
 
-        item.save_object(dest_href=destination)
+        item = create_item(
+            href,
+            pdal_reader=reader,
+            compute_statistics=compute_statistics,
+            pointcloud_type=pointcloud_type,
+            additional_providers=additional_providers,
+            quick=quick,
+        )
 
-        return None
+        item_path = os.path.join(dst, "{}.json".format(item.id))
+        item.set_self_href(item_path)
+        item.make_asset_hrefs_relative()
+        item.save_object()
+        item.validate()
 
-    return ephemeralcmd
+    return canelevation

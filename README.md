@@ -10,8 +10,6 @@
 - STAC extensions used:
   - [proj](https://github.com/stac-extensions/projection/)
   - [pointcloud](https://github.com/stac-extensions/pointcloud/)  
-- Extra fields:
-  - `canelevation:custom`: A custom attribute
 - [Browse the example in human-readable form](https://radiantearth.github.io/stac-browser/#/external/raw.githubusercontent.com/stactools-packages/canelevation/main/examples/collection.json)
 
 A stactools package for working with Cloud Optimized Point Clouds (copc) data from the CanElevation
@@ -41,7 +39,7 @@ stac canelevation create-item https://ftp-maps-canada-ca.s3.amazonaws.com/pub/el
 
 PDAL can read just the header of a COPC file using the `quicklook` function.
 The `-q` or `--quick` flags allow PDAL to quickly gather some metadata without opening the file.
-This does **not** fill the [`schemas` property of the pointcloud stac extension](https://github.com/stac-extensions/pointcloud#schema-object).
+ - **This does not fill the [`schemas` property of the pointcloud stac extension](https://github.com/stac-extensions/pointcloud#schema-object)**.
 
 Use `stac canelevation --help` to see all subcommands and options.
 

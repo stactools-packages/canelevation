@@ -1,5 +1,5 @@
-import stactools.ephemeral
+import stactools.canelevation
 
 
 def test_version() -> None:
-    assert stactools.ephemeral.__version__ is not None
+    assert stactools.canelevation.__version__ is not None

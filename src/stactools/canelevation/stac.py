@@ -1,117 +1,208 @@
+import datetime
+import json
 import logging
-from datetime import datetime, timezone
+import os.path
+import re
+from typing import Any, Dict, List, Optional
 
-from pystac import (
-    Asset,
-    CatalogType,
-    Collection,
-    Extent,
-    Item,
-    MediaType,
-    Provider,
-    ProviderRole,
-    SpatialExtent,
-    TemporalExtent,
+import pdal
+import pystac
+from pyproj import CRS
+from pystac.extensions.pointcloud import (
+    PointcloudExtension,
+    Schema,
+    SchemaType,
+    Statistic,
 )
 from pystac.extensions.projection import ProjectionExtension
+from pystac.link import Link
+from pystac.provider import Provider, ProviderRole
+from shapely.geometry import box, mapping, shape
+from stactools.core.projection import reproject_geom
+
+from stactools.canelevation.constants import (
+    KEYWORDS,
+    METADATA_URL,
+    PROVIDER_URL,
+    STAC_ID,
+)
+from stactools.canelevation.utils import get_metadata
 
 logger = logging.getLogger(__name__)
 
 
-def create_collection() -> Collection:
-    """Create a STAC Collection
+def _extract_reader_key(metadata: Dict[str, Any]) -> str:
+    for key in metadata.keys():
+        if key.startswith("readers"):
+            return key
+    raise Exception("Could not find reader key in pipeline metadata")
 
-    This function includes logic to extract all relevant metadata from
-    an asset describing the STAC collection and/or metadata coded into an
-    accompanying constants.py file.
 
-    See `Collection<https://pystac.readthedocs.io/en/latest/api.html#collection>`_.
+def create_collection(metadata_url: str = METADATA_URL) -> pystac.Collection:
+    """Create a STAC Collection for CanElevation
+
+    Args:
+        metadata_url (str): The url from which to get metadata
 
     Returns:
-        Collection: STAC Collection object
+        pystac.Collection: pystac collection object
     """
-    providers = [
-        Provider(
-            name="The OS Community",
-            roles=[ProviderRole.PRODUCER, ProviderRole.PROCESSOR, ProviderRole.HOST],
-            url="https://github.com/stac-utils/stactools",
-        )
-    ]
+    metadata = get_metadata(metadata_url)
 
-    # Time must be in UTC
-    demo_time = datetime.now(tz=timezone.utc)
-
-    extent = Extent(
-        SpatialExtent([[-180.0, 90.0, 180.0, -90.0]]),
-        TemporalExtent([[demo_time, None]]),
+    provider = Provider(
+        name=metadata.provider,
+        roles=[
+            ProviderRole.HOST,
+            ProviderRole.LICENSOR,
+            ProviderRole.PROCESSOR,
+            ProviderRole.PRODUCER,
+        ],
+        url=PROVIDER_URL,
     )
 
-    collection = Collection(
-        id="my-collection-id",
-        title="A dummy STAC Collection",
-        description="Used for demonstration purposes",
-        license="CC-0",
-        providers=providers,
+    extent = pystac.Extent(
+        pystac.SpatialExtent([metadata.bbox_polygon]),
+        pystac.TemporalExtent([[metadata.datetime_start, metadata.datetime_end]]),
+    )
+
+    collection = pystac.Collection(
+        id=STAC_ID,
+        title=metadata.title,
+        description=metadata.description,
+        providers=[provider],
+        license=metadata.license_id,
         extent=extent,
-        catalog_type=CatalogType.RELATIVE_PUBLISHED,
+        catalog_type=pystac.CatalogType.RELATIVE_PUBLISHED,
+        keywords=KEYWORDS,
+    )
+
+    collection.add_link(
+        Link(rel="license", target=metadata.license_url, title=metadata.license_title)
     )
 
     return collection
 
 
-def create_item(asset_href: str) -> Item:
-    """Create a STAC Item
-
-    This function should include logic to extract all relevant metadata from an
-    asset, metadata asset, and/or a constants.py file.
-
-    See `Item<https://pystac.readthedocs.io/en/latest/api.html#item>`_.
+def create_item(
+    href: str,
+    pdal_reader: Optional[str] = None,
+    compute_statistics: bool = False,
+    pointcloud_type: str = "lidar",
+    additional_providers: Optional[List[Provider]] = None,
+    quick: bool = False,
+) -> pystac.Item:
+    """Creates a STAC Item from a point cloud.
 
     Args:
-        asset_href (str): The HREF pointing to an asset associated with the item
+        href (str): The href to the point cloud.
+        pdal_reader (str): Override the default PDAL reader for this file extension.
+        compute_statistics (bool): Set to true to compute statistics for the
+        point cloud. Could take a while.
+        pointcloud_type (str): The point cloud type, e.g. "lidar", "eopc",
+        "radar", "sonar", or "other". Default is "lidar".
+        quick (bool): Do a quick look into the point cloud
 
-    Returns:
-        Item: STAC Item object
+    Return:
+        pystac.Item: A STAC Item representing this point cloud.
     """
+    reader = href
 
-    properties = {
-        "title": "A dummy STAC Item",
-        "description": "Used for demonstration purposes",
-    }
+    pipeline = pdal.Pipeline(json.dumps([reader, {"type": "filters.head", "count": 0}]))
 
-    demo_geom = {
-        "type": "Polygon",
-        "coordinates": [[[-180, -90], [180, -90], [180, 90], [-180, 90], [-180, -90]]],
-    }
+    if quick:
+        metadata = pipeline.quickinfo
+    else:
+        pipeline.execute()
+        metadata = pipeline.metadata["metadata"]
 
-    # Time must be in UTC
-    demo_time = datetime.now(tz=timezone.utc)
+    reader_key = _extract_reader_key(metadata)
+    metadata = metadata[reader_key]
+    id = os.path.splitext(os.path.basename(href))[0]
+    encoding = os.path.splitext(href)[1][1:]
 
-    item = Item(
-        id="my-item-id",
-        properties=properties,
-        geometry=demo_geom,
-        bbox=[-180, 90, 180, -90],
-        datetime=demo_time,
-        stac_extensions=[],
+    if quick:
+        spatialreference = CRS.from_json(json.dumps(metadata["srs"]["json"]))
+    else:
+        spatialreference = CRS.from_string(metadata["spatialreference"])
+
+    if quick:
+        original_bbox = box(
+            metadata["bounds"]["minx"],
+            metadata["bounds"]["miny"],
+            metadata["bounds"]["maxx"],
+            metadata["bounds"]["maxy"],
+        )
+    else:
+        original_bbox = box(
+            metadata["minx"], metadata["miny"], metadata["maxx"], metadata["maxy"]
+        )
+
+    geometry = reproject_geom(
+        spatialreference, "EPSG:4326", mapping(original_bbox), precision=6
+    )
+    bbox = list(shape(geometry).bounds)
+
+    # THESE DATES ARE DIFFERENT!!!
+    if quick:
+        filedate = re.findall(r"\d{8}", id)[0]
+        dt = datetime.datetime.strptime(filedate, "%Y%m%d")
+
+    else:
+        dt = datetime.datetime(metadata["creation_year"], 1, 1) + datetime.timedelta(
+            metadata["creation_doy"] - 1
+        )
+    id_name = os.path.splitext(id)[0]
+    item = pystac.Item(
+        id=id_name, geometry=geometry, bbox=bbox, datetime=dt, properties={}
     )
 
-    # It is a good idea to include proj attributes to optimize for libs like stac-vrt
-    proj_attrs = ProjectionExtension.ext(item, add_if_missing=True)
-    proj_attrs.epsg = 4326
-    proj_attrs.bbox = [-180, 90, 180, -90]
-    proj_attrs.shape = [1, 1]  # Raster shape
-    proj_attrs.transform = [-180, 360, 0, 90, 0, 180]  # Raster GeoTransform
-
-    # Add an asset to the item (COG for example)
     item.add_asset(
-        "image",
-        Asset(
-            href=asset_href,
-            media_type=MediaType.COG,
+        "pointcloud",
+        pystac.Asset(
+            href=href,
+            media_type="application/octet-stream",
             roles=["data"],
-            title="A dummy STAC Item COG",
+            title=f"{encoding} point cloud",
         ),
     )
 
+    # if additional_providers:
+    #     item.common_metadata.providers.extend(additional_providers)
+
+    pc_ext = PointcloudExtension.ext(item, add_if_missing=True)
+    pc_ext.count = metadata["num_points"] if quick else metadata["count"]
+    pc_ext.type = pointcloud_type
+    pc_ext.encoding = encoding
+
+    if quick:
+        # We are filling the data with empty values. Since we did a quicklook, we only looked
+        # at the header and not the full dataset.
+        pc_ext.schemas = [
+            Schema.create(dim, 0, SchemaType.SIGNED)
+            for dim in metadata["dimensions"].split(",")
+        ]
+    else:
+        schema = pipeline.schema["schema"]["dimensions"]
+        pc_ext.schemas = [Schema(schema) for schema in schema]
+
+    if compute_statistics:
+        pc_ext.statistics = _compute_statistics(reader)
+
+    epsg = spatialreference.to_epsg()
+    if epsg:
+        proj_ext = ProjectionExtension.ext(item, add_if_missing=True)
+        proj_ext.epsg = epsg
+        proj_ext.wkt2 = spatialreference.to_wkt()
+        proj_ext.bbox = list(original_bbox.bounds)
+
     return item
+
+
+def _compute_statistics(reader: str | dict[str, str]) -> Any:
+    pipeline = pdal.Pipeline(json.dumps([reader, {"type": "filters.stats"}]))
+    pipeline.execute()
+    stats = json.loads(pipeline.get_metadata())["metadata"]["filters.stats"][
+        "statistic"
+    ]
+    stats = [Statistic(stats) for stats in stats]
+    return stats

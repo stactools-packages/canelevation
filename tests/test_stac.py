@@ -1,28 +1,51 @@
-from stactools.ephemeral import stac
+import datetime
+import os
+import unittest
+
+from pystac.extensions.pointcloud import PointcloudExtension
+from pystac.extensions.projection import ProjectionExtension
+
+from stactools.canelevation.stac import create_collection, create_item
 
 
-def test_create_collection() -> None:
-    # Write tests for each for the creation of a STAC Collection
-    # Create the STAC Collection...
-    collection = stac.create_collection()
-    collection.set_self_href("")
+class StacTest(unittest.TestCase):
+    def test_create_collection(self) -> None:
+        # Write tests for each for the creation of a STAC Collection
+        # Create the STAC Collection...
+        collection = create_collection()
+        collection.set_self_href("")
 
-    # Check that it has some required attributes
-    assert collection.id == "my-collection-id"
-    # self.assertEqual(collection.other_attr...
+        # Check that it has some required attributes
+        assert collection.id == "nrcan-canelevation"
 
-    # Validate
-    collection.validate()
+        # Validate
+        collection.validate()
 
+    def test_create_item(self) -> None:
+        path = os.path.abspath("tests/data-files/autzen_trim.las")
+        print(path)
+        item = create_item(path)
+        self.assertEqual(item.id, "autzen_trim")
+        self.assertEqual(item.datetime, datetime.datetime(2015, 9, 10))
 
-def test_create_item() -> None:
-    # Write tests for each for the creation of STAC Items
-    # Create the STAC Item...
-    item = stac.create_item("/path/to/asset.tif")
+        projection = ProjectionExtension.ext(item)
+        self.assertEqual(projection.epsg, 2994)
 
-    # Check that it has some required attributes
-    assert item.id == "my-item-id"
-    # self.assertEqual(item.other_attr...
+        pointcloud = PointcloudExtension.ext(item)
+        self.assertEqual(pointcloud.count, 110000)
+        self.assertEqual(pointcloud.type, "lidar")
+        self.assertEqual(pointcloud.encoding, "las")
+        self.assertEqual(pointcloud.statistics, None)
+        self.assertTrue(pointcloud.schemas)
 
-    # Validate
-    item.validate()
+        item.validate()
+
+    def test_create_item_from_url(self) -> None:
+        url = "https://github.com/PDAL/PDAL/raw/2.2.0/test/data/las/autzen_trim.las"
+        item = create_item(url)
+        item.validate()
+
+    def test_create_item_from_nrcan_s3(self) -> None:
+        url = "https://ftp-maps-canada-ca.s3.amazonaws.com/pub/elevation/pointclouds_nuagespoints/NRCAN/Fort_McMurray_2018/AB_FortMcMurray2018_20180518_NAD83CSRS_UTMZ12_1km_E4760_N62940_CQL1_CLASS.copc.laz"  # noqa
+        item = create_item(url, None, False, "Lidar", None, True)
+        item.validate()

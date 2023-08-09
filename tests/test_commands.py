@@ -1,55 +1,44 @@
-import os.path
+import os
 from tempfile import TemporaryDirectory
 from typing import Callable, List
 
 import pystac
 from click import Command, Group
-from stactools.testing.cli_test import CliTestCase
+from stactools.testing import CliTestCase
 
-from stactools.ephemeral.commands import create_ephemeralcmd_command
+from stactools.canelevation.commands import create_canelevation_command
 
 
 class CommandsTest(CliTestCase):
     def create_subcommand_functions(self) -> List[Callable[[Group], Command]]:
-        return [create_ephemeralcmd_command]
+        return [create_canelevation_command]
 
-    def test_create_collection(self) -> None:
-        with TemporaryDirectory() as tmp_dir:
-            # Run your custom create-collection command and validate
+    def test_create_collection_cmd(self) -> None:
+        with TemporaryDirectory() as directory:
+            # Run command to create collection in the temporary directory
+            self.run_command(["canelevation", "create-collection", "-d", directory])
 
-            # Example:
-            destination = os.path.join(tmp_dir, "collection.json")
+            # Validate that one json file has been created in the directory
+            json_files = [p for p in os.listdir(directory) if p.endswith(".json")]
+            self.assertEqual(len(json_files), 1)
 
-            result = self.run_command(f"ephemeralcmd create-collection {destination}")
-
-            assert result.exit_code == 0, "\n{}".format(result.output)
-
-            jsons = [p for p in os.listdir(tmp_dir) if p.endswith(".json")]
-            assert len(jsons) == 1
-
-            collection = pystac.read_file(destination)
-            assert collection.id == "my-collection-id"
-            # assert collection.other_attr...
-
+            # Validate the created collection
+            collection_path = os.path.join(directory, json_files[0])
+            collection = pystac.read_file(collection_path)
             collection.validate()
 
-    def test_create_item(self) -> None:
-        with TemporaryDirectory() as tmp_dir:
-            # Run your custom create-item command and validate
+    def test_create_item_cmd(self) -> None:
+        href = os.path.abspath("tests/data-files/autzen_trim.las")
 
-            # Example:
-            infile = "/path/to/asset.tif"
-            destination = os.path.join(tmp_dir, "item.json")
-            result = self.run_command(
-                f"ephemeralcmd create-item {infile} {destination}"
-            )
-            assert result.exit_code == 0, "\n{}".format(result.output)
+        with TemporaryDirectory() as directory:
+            # Run command to create item in the temporary directory
+            self.run_command(["canelevation", "create-item", href, directory])
 
-            jsons = [p for p in os.listdir(tmp_dir) if p.endswith(".json")]
-            assert len(jsons) == 1
+            # Validate that one json file has been created in the directory
+            json_files = [p for p in os.listdir(directory) if p.endswith(".json")]
+            self.assertEqual(len(json_files), 1)
 
-            item = pystac.read_file(destination)
-            assert item.id == "my-item-id"
-            # assert item.other_attr...
-
+            # Validate the created item
+            item_path = os.path.join(directory, json_files[0])
+            item = pystac.read_file(item_path)
             item.validate()
