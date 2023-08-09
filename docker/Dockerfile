@@ -5,7 +5,6 @@ RUN conda update conda && \
     conda env update -f environment.yml -n base && \
     conda clean -af
 
-
 FROM base as dependencies
 
 ENV PATH="/opt/venv/bin:$PATH"
@@ -18,9 +17,8 @@ RUN apt-get -y -q update \
     && rm -rf /var/lib/apt/lists/
 RUN python -m venv /opt/venv
 RUN pip install . --no-binary rasterio \
-    && ls /opt/venv \
-    && rm -r /opt/venv/lib/python3.10/site-packages/stactools/canelevation
-
+    && ls /opt/venv/lib/ \
+    && rm -r /opt/venv/lib/python3.11/site-packages/stactools/canelevation
 
 FROM dependencies as builder
 
