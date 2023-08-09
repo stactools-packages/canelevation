@@ -120,7 +120,6 @@ def create_item(
     id = os.path.splitext(os.path.basename(href))[0]
     encoding = os.path.splitext(href)[1][1:]
 
-    print(metadata["srs"].keys())
     if quick:
         spatialreference = CRS.from_wkt(metadata["srs"]["compoundwkt"])
     else:
