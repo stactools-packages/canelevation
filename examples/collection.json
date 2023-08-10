@@ -5,11 +5,6 @@
   "description": "The LiDAR Point Clouds is a product that is part of the CanElevation Series created to support the National Elevation Data Strategy implemented by NRCan.  \n  \n  This product contains point clouds from various airborne LiDAR acquisition projects conducted in Canada. These airborne LiDAR acquisition projects may have been conducted by NRCan or by various partners. The LiDAR point cloud data is licensed under an open government license and has been incorporated into the National Elevation Data Strategy.  \n  \n  Point cloud files are distributed by LiDAR acquisition project without integration between projects.  \n  \n  The point cloud files are distributed using the compressed .LAZ / Cloud Optimized Point Cloud (COPC) format. The COPC open format is an octree reorganization of the data inside a .LAZ 1.4 file. It allows efficient use and visualization rendering via HTTP calls (e.g. via the web), while offering the capabilities specific to the compressed .LAZ format which is already well established in the industry. Point cloud files are therefore both downloadable for local use and viewable via URL links from a cloud computing environment.  \n  \n  The reference system used for all point clouds in the product is NAD83(CSRS), epoch 2010. The projection used is the UTM projection with the corresponding zone. Elevations are orthometric and expressed in reference to the Canadian Geodetic Vertical Datum of 2013 (CGVD2013).",
   "links": [
     {
-      "rel": "self",
-      "href": "./collection.json",
-      "type": "application/json"
-    },
-    {
       "rel": "root",
       "href": "./collection.json",
       "type": "application/json",
@@ -21,8 +16,8 @@
       "title": "Open Government Licence - Canada"
     },
     {
-      "rel": "item",
-      "href": "./AB_FortMcMurray2018_20180518_NAD83CSRS_UTMZ12_1km_E4760_N62940_CQL1_CLASS/AB_FortMcMurray2018_20180518_NAD83CSRS_UTMZ12_1km_E4760_N62940_CQL1_CLASS.json",
+      "rel": "self",
+      "href": "./collection.json",
       "type": "application/json"
     }
   ],
@@ -31,23 +26,23 @@
     "spatial": {
       "bbox": [
         [
-          -111.392969,
-          56.789298,
-          -111.376506,
-          56.798332
+          -141.003,
+          41.6755,
+          -52.6174,
+          83.1139
         ]
       ]
     },
     "temporal": {
       "interval": [
         [
-          "2020-02-29T00:00:00Z",
-          "2020-02-29T00:00:00Z"
+          "2014-04-20T07:00:00Z",
+          null
         ]
       ]
     }
   },
-  "license": "ca-ogl-lgo",
+  "license": "OGL-Canada-2.0",
   "keywords": [
     "Point Cloud",
     "North America",

@@ -108,6 +108,8 @@ def get_metadata(metadata_path: str) -> StacMetadata:
     stac_metadata.title = remote_metadata["title"]
     stac_metadata.description = remote_metadata["notes"]
     stac_metadata.provider = remote_metadata["organization"]["title"]
+    if remote_metadata["license_id"] == "ca-ogl-lgo":
+        remote_metadata["license_id"] = "OGL-Canada-2.0" # match SPDX identifier.
     stac_metadata.license_id = remote_metadata["license_id"]
     stac_metadata.license_title = remote_metadata["license_title"]
     stac_metadata.license_url = remote_metadata["license_url"]
