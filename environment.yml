@@ -3,8 +3,9 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - conda-forge::gdal 
-  - conda-forge::pdal
-  - conda-forge::python-pdal
-  - conda-forge::geos
-  - conda-forge::rasterio
+  - python=3.11
+  - conda-forge::gdal=3.7.1 
+  - conda-forge::pdal=2.5.5
+  - conda-forge::python-pdal=3.2.3
+  - conda-forge::geos=3.12.0
+  - conda-forge::rasterio=1.3.7
