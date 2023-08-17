@@ -144,7 +144,12 @@ def create_item(
 
     # THESE DATES ARE DIFFERENT!!!
     if quick:
-        filedate = re.findall(r"\d{8}", id)[0]
+        # add try statement here because there is an error
+        try:
+            filedate = re.findall(r"\d{8}", id)[0]
+        except IndexError:
+            print(id)
+            filedate = "19010101"
         dt = datetime.datetime.strptime(filedate, "%Y%m%d")
 
     else:
@@ -155,6 +160,11 @@ def create_item(
     item = pystac.Item(
         id=id_name, geometry=geometry, bbox=bbox, datetime=dt, properties={}
     )
+
+    # Create a campaign property
+    pattern = r"([A-Z]{2}_\w+_\d{4})"
+    match = re.search(pattern, os.path.splitext(id_name)[0])
+    item.properties["canelevation:campaign"] = match.group(1)
 
     item.add_asset(
         "pointcloud",

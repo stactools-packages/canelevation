@@ -13,7 +13,7 @@ from shapely.geometry import box, mapping, shape
 
 class StacMetadata(SimpleNamespace):
     """
-    AAFC Land Use Stac Metadata namespace
+    CanElevation STAC Metadata namespace
     """
 
     @staticmethod
@@ -87,13 +87,13 @@ def bounds_to_geojson(bbox: List[float], in_crs: int) -> Dict[str, Any]:
 
 def get_metadata(metadata_path: str) -> StacMetadata:
     """
-    Collect remote metadata published by AAFC
+    Collect remote metadata published by NRCan
 
     Args:
         metadata_path (str): Local path or href to metadata json.
 
     Returns:
-        StacMetadata: AAFC Land Use Metadata for use in
+        StacMetadata: CanElevation metadata for use in
         `stac.create_collection` and `stac.create_item`
     """
     stac_metadata = StacMetadata()
@@ -102,8 +102,12 @@ def get_metadata(metadata_path: str) -> StacMetadata:
         with open(metadata_path) as f:
             remote_metadata = json.load(f)
     else:
-        metadata_response = requests.get(metadata_path)
-        remote_metadata = metadata_response.json()["result"]
+        try:
+            metadata_response = requests.get(metadata_path)
+            remote_metadata = metadata_response.json()["result"]
+        except json.JSONDecodeError:
+            print("NRCan may be unavailable")
+            metadata_response = []
 
     stac_metadata.title = remote_metadata["title"]
     stac_metadata.description = remote_metadata["notes"]
