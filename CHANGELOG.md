@@ -41,4 +41,4 @@ number as needed.
 
 ### Added
 
-- Initial Commmit.
+- Initial Commit.
