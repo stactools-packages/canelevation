@@ -164,7 +164,10 @@ def create_item(
     # Create a campaign property
     pattern = r"([A-Z]{2}_\w+_\d{4})"
     match = re.search(pattern, os.path.splitext(id_name)[0])
-    item.properties["canelevation:campaign"] = match.group(1)
+    if match is not None:
+        item.properties["canelevation:campaign"] = match.group(1)
+    else:
+        item.properties["canelevation:campaign"] = "XXX"
 
     item.add_asset(
         "pointcloud",

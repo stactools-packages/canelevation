@@ -37,15 +37,20 @@ class StacTest(unittest.TestCase):
         self.assertEqual(pointcloud.encoding, "las")
         self.assertEqual(pointcloud.statistics, None)
         self.assertTrue(pointcloud.schemas)
+        self.assertEqual(item.properties["canelevation:campaign"], "XXX")
 
         item.validate()
 
     def test_create_item_from_url(self) -> None:
         url = "https://github.com/PDAL/PDAL/raw/2.2.0/test/data/las/autzen_trim.las"
         item = create_item(url)
+        self.assertEqual(item.properties["canelevation:campaign"], "XXX")
         item.validate()
 
     def test_create_item_from_nrcan_s3(self) -> None:
         url = "https://ftp-maps-canada-ca.s3.amazonaws.com/pub/elevation/pointclouds_nuagespoints/NRCAN/Fort_McMurray_2018/AB_FortMcMurray2018_20180518_NAD83CSRS_UTMZ12_1km_E4760_N62940_CQL1_CLASS.copc.laz"  # noqa
         item = create_item(url, None, False, "Lidar", None, True)
+        self.assertEqual(
+            item.properties["canelevation:campaign"], "AB_FortMcMurray2018_2018"
+        )
         item.validate()
