@@ -26,3 +26,19 @@ number as needed.
 - Nothing.
 
 [Unreleased]: <https://github.com/stactools-packages/canelevation/tree/main/>
+
+## [v0.2.0]
+
+### Added
+
+- Added more tests.
+
+### Fixed
+
+- Set the asset type to be  `application/vnd.laszip+copc`
+
+## [v0.1.0]
+
+### Added
+
+- Initial Commmit.
