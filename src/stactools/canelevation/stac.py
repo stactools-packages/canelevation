@@ -173,7 +173,7 @@ def create_item(
         "pointcloud",
         pystac.Asset(
             href=href,
-            media_type="application/octet-stream",
+            media_type="application/vnd.laszip+copc",
             roles=["data"],
             title=f"{encoding} point cloud",
         ),

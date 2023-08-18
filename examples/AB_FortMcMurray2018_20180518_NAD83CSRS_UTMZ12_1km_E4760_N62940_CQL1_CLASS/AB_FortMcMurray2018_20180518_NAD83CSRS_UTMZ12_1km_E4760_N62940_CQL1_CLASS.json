@@ -3,6 +3,7 @@
   "stac_version": "1.0.0",
   "id": "AB_FortMcMurray2018_20180518_NAD83CSRS_UTMZ12_1km_E4760_N62940_CQL1_CLASS",
   "properties": {
+    "canelevation:campaign": "AB_FortMcMurray2018_2018",
     "pc:count": 12180055,
     "pc:type": "lidar",
     "pc:encoding": "laz",
@@ -122,22 +123,9 @@
   },
   "links": [
     {
-      "rel": "root",
-      "href": "../collection.json",
-      "type": "application/json",
-      "title": "LiDAR Point Clouds - CanElevation Series"
-    },
-    {
-      "rel": "collection",
-      "href": "../collection.json",
-      "type": "application/json",
-      "title": "LiDAR Point Clouds - CanElevation Series"
-    },
-    {
-      "rel": "parent",
-      "href": "../collection.json",
-      "type": "application/json",
-      "title": "LiDAR Point Clouds - CanElevation Series"
+      "rel": "self",
+      "href": "/Users/james/Projects/Community/canelevation/examples/AB_FortMcMurray2018_20180518_NAD83CSRS_UTMZ12_1km_E4760_N62940_CQL1_CLASS.json",
+      "type": "application/json"
     }
   ],
   "assets": {
@@ -159,6 +147,5 @@
   "stac_extensions": [
     "https://stac-extensions.github.io/pointcloud/v1.0.0/schema.json",
     "https://stac-extensions.github.io/projection/v1.1.0/schema.json"
-  ],
-  "collection": "nrcan-canelevation"
+  ]
 }
