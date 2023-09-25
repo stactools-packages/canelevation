@@ -1,6 +1,41 @@
+[project]
+name = "stactools-cenelevation"
+version = "0.2.1"
+description = "Code and tools for working with the COPC LiDAR data from NRCan."
+readme = "README.md"
+authors = [{ name = "James Banting", email = "jbanting@sparkgeo.com" }]
+maintainers = [{ name = "James Banting", email = "jbanting@sparkgeo.com" }]
+keywords = ["stactools", "pystac", "catalog", "STAC", "LiDAR"]
+license = { text = "Apache-2.0" }
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+requires-python = ">=3.10"
+dependencies = ["stactools>=0.4.0", "pdal>=2.4"]
+
+[project.optional-dependencies]
+dev = [
+    "black~=23.9",
+    "codespell~=2.2",
+    "mypy~=1.5",
+    "pre-commit~=3.4",
+    "pytest-cov~=4.1",
+    "pytest~=7.4",
+    "ruff==0.0.288",
+]
+
+[project.urls]
+Github = "https://github.com/stactools-packages/canelevation"
+Issues = "https://github.com/stactools-packages/canelevation/issues"
+
 [build-system]
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
-[tool.isort]
-profile = "black"
+[tool.ruff]
+select = ["E", "F", "I"]

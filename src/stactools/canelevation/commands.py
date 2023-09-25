@@ -5,7 +5,6 @@ import os
 import click
 import pystac
 from click import Command, Group
-
 from stactools.canelevation.constants import METADATA_URL
 from stactools.canelevation.stac import create_collection, create_item
 

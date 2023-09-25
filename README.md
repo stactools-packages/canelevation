@@ -1,6 +1,7 @@
 # stactools-canelevation
 
-[![PyPI](https://img.shields.io/pypi/v/stactools-canelevation)](https://pypi.org/project/stactools-canelevation/)
+[![PyPI](https://img.shields.io/pypi/v/stactools-canelevation?style=for-the-badge)](https://pypi.org/project/stactools-canelevation/)
+![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/stactools-packages/canelevation/continuous-integration.yml?style=for-the-badge)
 
 - Name: canelevation
 - Package: `stactools.canelevation`
@@ -15,7 +16,7 @@
 A stactools package for working with Cloud Optimized Point Clouds (copc) data from the CanElevation
 data series from NRCan.
 
-## STAC Examples
+## STAC examples
 
 - [Collection](examples/collection.json)
 - [Item](examples/AB_FortMcMurray2018_20180518_NAD83CSRS_UTMZ12_1km_E4760_N62940_CQL1_CLASS.copc/AB_FortMcMurray2018_20180518_NAD83CSRS_UTMZ12_1km_E4760_N62940_CQL1_CLASS.copc.json)
@@ -26,7 +27,7 @@ data series from NRCan.
 pip install stactools-canelevation
 ```
 
-## Command-line Usage
+## Command-line usage
 
 Base use is below:
 
@@ -51,7 +52,6 @@ To set up your development environment:
 
 ```shell
 pip install -e .
-pip install -r requirements-dev.txt
 pre-commit install
 ```
 
@@ -65,4 +65,10 @@ To run the tests:
 
 ```shell
 pytest -vv
+```
+
+If you've updated the STAC metadata output, update the examples:
+
+```shell
+scripts/update-examples
 ```

@@ -18,8 +18,6 @@ from pystac.extensions.projection import ProjectionExtension
 from pystac.link import Link
 from pystac.provider import Provider, ProviderRole
 from shapely.geometry import box, mapping, shape
-from stactools.core.projection import reproject_geom
-
 from stactools.canelevation.constants import (
     KEYWORDS,
     METADATA_URL,
@@ -27,6 +25,7 @@ from stactools.canelevation.constants import (
     STAC_ID,
 )
 from stactools.canelevation.utils import get_metadata
+from stactools.core.projection import reproject_geom
 
 logger = logging.getLogger(__name__)
 
@@ -156,6 +155,14 @@ def create_item(
         id=id_name, geometry=geometry, bbox=bbox, datetime=dt, properties={}
     )
 
+    # Create a campaign property
+    pattern = r"([A-Z]{2}_\w+_\d{4})"
+    match = re.search(pattern, os.path.splitext(id_name)[0])
+    if match is not None:
+        item.properties["canelevation:campaign"] = match.group(1)
+    else:
+        item.properties["canelevation:campaign"] = "XXX"
+
     item.add_asset(
         "pointcloud",
         pystac.Asset(
@@ -175,8 +182,8 @@ def create_item(
     pc_ext.encoding = encoding
 
     if quick:
-        # We are filling the data with empty values. Since we did a quicklook, we only looked
-        # at the header and not the full dataset.
+        # We are filling the data with empty values. Since we did a quicklook,
+        # we only looked at the header and not the full dataset.
         pc_ext.schemas = [
             Schema.create(dim, 0, SchemaType.SIGNED)
             for dim in metadata["dimensions"].split(",")

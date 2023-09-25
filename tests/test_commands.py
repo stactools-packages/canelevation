@@ -1,44 +1,36 @@
-import os
-from tempfile import TemporaryDirectory
-from typing import Callable, List
+from pathlib import Path
 
-import pystac
-from click import Command, Group
-from stactools.testing import CliTestCase
-
+from click import Group
+from click.testing import CliRunner
+from pystac import Collection, Item
 from stactools.canelevation.commands import create_canelevation_command
 
+from . import test_data
 
-class CommandsTest(CliTestCase):
-    def create_subcommand_functions(self) -> List[Callable[[Group], Command]]:
-        return [create_canelevation_command]
+command = create_canelevation_command(Group())
 
-    def test_create_collection_cmd(self) -> None:
-        with TemporaryDirectory() as directory:
-            # Run command to create collection in the temporary directory
-            self.run_command(["canelevation", "create-collection", "-d", directory])
 
-            # Validate that one json file has been created in the directory
-            json_files = [p for p in os.listdir(directory) if p.endswith(".json")]
-            self.assertEqual(len(json_files), 1)
+def test_create_collection_cmd(tmp_path: Path) -> None:
+    # Smoke test for the command line create-collection command
+    #
+    # Most checks should be done in test_stac.py::test_create_collection
+    path = str(tmp_path)
 
-            # Validate the created collection
-            collection_path = os.path.join(directory, json_files[0])
-            collection = pystac.read_file(collection_path)
-            collection.validate()
+    runner = CliRunner()
+    result = runner.invoke(command, ["create-collection", "-d", path])
+    assert result.exit_code == 0, "\n{}".format(result.output)
+    collection = Collection.from_file(path + "\collection.json")
+    collection.validate()
 
-    def test_create_item_cmd(self) -> None:
-        href = os.path.abspath("tests/data-files/autzen_trim.las")
 
-        with TemporaryDirectory() as directory:
-            # Run command to create item in the temporary directory
-            self.run_command(["canelevation", "create-item", href, directory])
-
-            # Validate that one json file has been created in the directory
-            json_files = [p for p in os.listdir(directory) if p.endswith(".json")]
-            self.assertEqual(len(json_files), 1)
-
-            # Validate the created item
-            item_path = os.path.join(directory, json_files[0])
-            item = pystac.read_file(item_path)
-            item.validate()
+def test_create_item(tmp_path: Path) -> None:
+    # Smoke test for the command line create-item command
+    #
+    # Most checks should be done in test_stac.py::test_create_item
+    asset_href = test_data.get_path("data/autzen_trim.las")
+    path = str(tmp_path)
+    runner = CliRunner()
+    result = runner.invoke(command, ["create-item", asset_href, path])
+    assert result.exit_code == 0, "\n{}".format(result.output)
+    item = Item.from_file(path + "\\autzen_trim.json")
+    item.validate()

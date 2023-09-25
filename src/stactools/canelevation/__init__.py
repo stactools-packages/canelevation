@@ -1,7 +1,6 @@
 import stactools.core
-from stactools.cli.registry import Registry
-
 from stactools.canelevation.stac import create_collection, create_item
+from stactools.cli.registry import Registry
 
 __all__ = ["create_collection", "create_item"]
 
@@ -12,6 +11,3 @@ def register_plugin(registry: Registry) -> None:
     from stactools.canelevation import commands
 
     registry.register_subcommand(commands.create_canelevation_command)
-
-
-__version__ = "0.1.0"
